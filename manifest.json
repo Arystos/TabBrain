@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "TabBrain",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Smart tab triage — auto-detects duplicates, clusters by topic, cleans stale tabs, keeps a rescue list.",
   "permissions": ["tabs", "storage", "notifications", "bookmarks", "alarms"],
   "background": {
