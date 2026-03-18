@@ -1,24 +1,46 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" width="96" height="96">
   <defs>
-    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#0097a7"/>
-      <stop offset="100%" stop-color="#1565c0"/>
+    <linearGradient id="brainGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4299e1"/>
+      <stop offset="100%" stop-color="#38b2ac"/>
+    </linearGradient>
+    <linearGradient id="tabGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#63b3ed"/>
+      <stop offset="100%" stop-color="#4299e1"/>
+    </linearGradient>
+    <linearGradient id="brainDark" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3182ce"/>
+      <stop offset="100%" stop-color="#2c9f94"/>
     </linearGradient>
   </defs>
-  <!-- Brain shape -->
-  <path d="M48 12C32 12 20 22 20 36c0 6 2.4 11 6 15 3 4 4 10 4 15v6c0 2.2 1.8 4 4 4h28c2.2 0 4-1.8 4-4v-6c0-5 1-11 4-15 3.6-4 6-9 6-15 0-14-12-24-28-24z" fill="url(#bg)"/>
-  <!-- Brain divide -->
-  <path d="M48 16v52" stroke="#fafafa" stroke-width="2" stroke-linecap="round" fill="none"/>
+  <!-- Browser tabs emerging from top of brain -->
+  <!-- Left tab -->
+  <rect x="20" y="22" width="20" height="6" rx="2.4" fill="url(#tabGrad)" opacity="0.9"/>
+  <rect x="22" y="24" width="12" height="1.8" rx="0.9" fill="#fff" opacity="0.35"/>
+  <!-- Center tab (active, taller) -->
+  <rect x="42" y="18" width="24" height="10" rx="3" fill="#fff" opacity="0.95"/>
+  <rect x="46" y="21" width="16" height="2.4" rx="1.2" fill="#4299e1" opacity="0.6"/>
+  <!-- Right tab -->
+  <rect x="68" y="22" width="18" height="6" rx="2.4" fill="url(#tabGrad)" opacity="0.7"/>
+  <rect x="70" y="24" width="10" height="1.8" rx="0.9" fill="#fff" opacity="0.25"/>
+  <!-- Brain body — left lobe -->
+  <path d="M24 32c-7 4-12 12-12 21 0 7 3 13 8 17 3 2.4 5 6 6 10h11c-.4-5-1.6-10-5-14C28 61 26 56 26 50c0-7 3-13 8-17l-10-1z" fill="url(#brainGrad)"/>
+  <!-- Brain body — right lobe -->
+  <path d="M72 32c7 4 12 12 12 21 0 7-3 13-8 17-3 2.4-5 6-6 10H59c.4-5 1.6-10 5-14 4-5 6-10 6-16 0-7-3-13-8-17l10-1z" fill="url(#brainGrad)"/>
+  <!-- Brain center mass -->
+  <ellipse cx="48" cy="54" rx="20" ry="24" fill="url(#brainGrad)"/>
+  <!-- Brain hemisphere divide -->
+  <path d="M48 30v52" stroke="#fff" stroke-width="1.4" stroke-linecap="round" fill="none" opacity="0.5"/>
   <!-- Left hemisphere folds -->
-  <path d="M46 26c-6 0-12 3-14 8" stroke="#fafafa" stroke-width="2" stroke-linecap="round" fill="none"/>
-  <path d="M46 38c-8 0-16 3-18 8" stroke="#fafafa" stroke-width="2" stroke-linecap="round" fill="none"/>
-  <path d="M46 50c-6 0-12 2-14 6" stroke="#fafafa" stroke-width="2" stroke-linecap="round" fill="none"/>
+  <path d="M44 40c-6 1-11 4-13 9" stroke="#fff" stroke-width="2" stroke-linecap="round" fill="none" opacity="0.55"/>
+  <path d="M44 52c-8 1-14 5-16 11" stroke="#fff" stroke-width="2" stroke-linecap="round" fill="none" opacity="0.45"/>
+  <path d="M44 64c-5 1-9 3-11 7" stroke="#fff" stroke-width="2" stroke-linecap="round" fill="none" opacity="0.35"/>
   <!-- Right hemisphere folds -->
-  <path d="M50 26c6 0 12 3 14 8" stroke="#fafafa" stroke-width="2" stroke-linecap="round" fill="none"/>
-  <path d="M50 38c8 0 16 3 18 8" stroke="#fafafa" stroke-width="2" stroke-linecap="round" fill="none"/>
-  <path d="M50 50c6 0 12 2 14 6" stroke="#fafafa" stroke-width="2" stroke-linecap="round" fill="none"/>
-  <!-- Base connector lines -->
-  <line x1="36" y1="76" x2="36" y2="84" stroke="url(#bg)" stroke-width="2.5" stroke-linecap="round"/>
-  <line x1="48" y1="76" x2="48" y2="84" stroke="url(#bg)" stroke-width="2.5" stroke-linecap="round"/>
-  <line x1="60" y1="76" x2="60" y2="84" stroke="url(#bg)" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M52 40c6 1 11 4 13 9" stroke="#fff" stroke-width="2" stroke-linecap="round" fill="none" opacity="0.55"/>
+  <path d="M52 52c8 1 14 5 16 11" stroke="#fff" stroke-width="2" stroke-linecap="round" fill="none" opacity="0.45"/>
+  <path d="M52 64c5 1 9 3 11 7" stroke="#fff" stroke-width="2" stroke-linecap="round" fill="none" opacity="0.35"/>
+  <!-- Brain stem / base -->
+  <rect x="36" y="78" width="24" height="6" rx="3" fill="url(#brainDark)"/>
+  <!-- Subtle glow highlight on brain top -->
+  <ellipse cx="48" cy="38" rx="12" ry="6" fill="#fff" opacity="0.12"/>
 </svg>
