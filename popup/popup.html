@@ -17,6 +17,7 @@
       <div class="stats-right">
         <button id="btn-close-dups" class="action-btn" title="Close all duplicates">Close dups</button>
         <button id="btn-close-stale" class="action-btn" title="Close all stale tabs">Close stale</button>
+        <button id="btn-settings" class="action-btn secondary" title="Settings">&#9881;</button>
       </div>
     </header>
 
@@ -28,6 +29,12 @@
     <!-- Topic Groups -->
     <div id="groups-container"></div>
 
+    <!-- Snoozed Tabs -->
+    <details id="snooze-section">
+      <summary>Snoozed (<span id="snooze-count">0</span>)</summary>
+      <div id="snooze-list"></div>
+    </details>
+
     <!-- Rescue List -->
     <details id="rescue-section">
       <summary>Rescue List (<span id="rescue-count">0</span>)</summary>
@@ -37,10 +44,6 @@
       </div>
     </details>
 
-    <!-- Settings link -->
-    <footer>
-      <button id="btn-settings" class="link-btn">Settings</button>
-    </footer>
   </div>
   <script src="popup.js"></script>
 </body>

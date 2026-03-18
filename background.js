@@ -16,11 +16,20 @@ async function init() {
   const active = existingTabs.find((t) => t.active);
   if (active) tracker.focusTab(active.id);
 
+  await snooze.checkWakeups();
+
   initialized = true;
   await runProcess();
 }
 
 init();
+
+// Snooze alarm handler
+browser.alarms.onAlarm.addListener(async (alarm) => {
+  if (alarm.name.startsWith("snooze-")) {
+    await snooze.checkWakeups();
+  }
+});
 
 // Listen to tab events
 browser.tabs.onCreated.addListener((tab) => {
@@ -117,6 +126,12 @@ browser.runtime.onMessage.addListener(async (msg) => {
     await rescue.reopen(msg.index);
   } else if (msg.action === "rescueClear") {
     await rescue.clear();
+  } else if (msg.action === "snoozeTab") {
+    await snooze.snoozeTab(msg.tabData, msg.tabId, msg.wakeAt);
+  } else if (msg.action === "cancelSnooze") {
+    await snooze.cancelSnooze(msg.index);
+  } else if (msg.action === "getSnoozed") {
+    return snooze.getSnoozed();
   } else if (msg.action === "reloadSettings") {
     await loadSettings();
   }

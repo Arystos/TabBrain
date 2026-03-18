@@ -13,6 +13,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   renderStats(classifications, clusters);
   renderGroups(clusters, classifications, tabData);
   renderRescueList(rescueList);
+
+  const snoozedData = await browser.runtime.sendMessage({ action: "getSnoozed" });
+  renderSnoozedList(snoozedData || []);
+
   setupSearch();
   setupActions();
 });
@@ -78,11 +82,12 @@ function renderGroups(clusters, classifications, tabData) {
         <img class="tab-favicon" src="${faviconUrl}" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22><rect fill=%22%23ddd%22 width=%2216%22 height=%2216%22 rx=%222%22/></svg>'" />
         <span class="tab-title" title="${escapeHtml(tab.title)}">${escapeHtml(tab.title || tab.url)}</span>
         <span class="tab-status ${status}">${formatStatus(status)}</span>
+        <button class="tab-snooze-btn" data-tab-id="${tabId}" title="Snooze tab">&#9203;</button>
         <button class="tab-close-btn" data-tab-id="${tabId}" title="Close tab">&times;</button>
       `;
 
       row.addEventListener("click", (e) => {
-        if (e.target.classList.contains("tab-close-btn")) return;
+        if (e.target.classList.contains("tab-close-btn") || e.target.classList.contains("tab-snooze-btn")) return;
         browser.tabs.update(Number(tabId), { active: true });
         window.close();
       });
@@ -120,6 +125,53 @@ function renderGroups(clusters, classifications, tabData) {
       } catch (err) {
         console.warn("Failed to close tab", err);
       }
+    });
+  });
+
+  // Snooze tab buttons
+  container.querySelectorAll(".tab-snooze-btn").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      // Remove any existing snooze dropdown
+      document.querySelectorAll(".snooze-dropdown").forEach((d) => d.remove());
+
+      const dropdown = document.createElement("div");
+      dropdown.className = "snooze-dropdown";
+      const options = getSnoozeOptions();
+      for (const opt of options) {
+        const item = document.createElement("div");
+        item.className = "snooze-option";
+        item.textContent = opt.label;
+        item.addEventListener("click", async (ev) => {
+          ev.stopPropagation();
+          const tid = Number(btn.dataset.tabId);
+          const td = tabData[tid];
+          if (td) {
+            await browser.runtime.sendMessage({
+              action: "snoozeTab",
+              tabData: { url: td.url, title: td.title },
+              tabId: tid,
+              wakeAt: opt.wakeAt,
+            });
+          }
+          const card = btn.closest(".group-card");
+          btn.closest(".tab-row").remove();
+          const remaining = card.querySelectorAll(".tab-row");
+          if (remaining.length === 0) card.remove();
+          else card.querySelector(".group-count").textContent = remaining.length;
+          dropdown.remove();
+        });
+        dropdown.appendChild(item);
+      }
+      btn.parentElement.appendChild(dropdown);
+
+      // Close dropdown on outside click
+      setTimeout(() => {
+        document.addEventListener("click", function handler() {
+          dropdown.remove();
+          document.removeEventListener("click", handler);
+        }, { once: true });
+      }, 0);
     });
   });
 
@@ -256,6 +308,55 @@ function setupActions() {
   document.getElementById("btn-settings").addEventListener("click", () => {
     window.location.href = "settings.html";
   });
+}
+
+function getSnoozeOptions() {
+  const now = new Date();
+  const in1h = now.getTime() + 60 * 60 * 1000;
+  const in3h = now.getTime() + 3 * 60 * 60 * 1000;
+
+  const tomorrow = new Date(now);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  tomorrow.setHours(9, 0, 0, 0);
+
+  const nextWeek = new Date(now);
+  nextWeek.setDate(nextWeek.getDate() + ((8 - nextWeek.getDay()) % 7 || 7));
+  nextWeek.setHours(9, 0, 0, 0);
+
+  return [
+    { label: "In 1 hour", wakeAt: in1h },
+    { label: "In 3 hours", wakeAt: in3h },
+    { label: "Tomorrow 9am", wakeAt: tomorrow.getTime() },
+    { label: "Next week", wakeAt: nextWeek.getTime() },
+  ];
+}
+
+function renderSnoozedList(snoozedList) {
+  const countEl = document.getElementById("snooze-count");
+  const listEl = document.getElementById("snooze-list");
+  countEl.textContent = snoozedList.length;
+
+  listEl.innerHTML = "";
+  if (snoozedList.length === 0) {
+    listEl.innerHTML = '<div class="empty-state">No snoozed tabs.</div>';
+    return;
+  }
+
+  for (let i = 0; i < snoozedList.length; i++) {
+    const entry = snoozedList[i];
+    const row = document.createElement("div");
+    row.className = "rescue-row";
+    row.innerHTML = `
+      <span class="tab-title">${escapeHtml(entry.title || entry.url)}</span>
+      <span class="rescue-time">wakes ${timeAgo(entry.wakeAt).replace(" ago", "")}</span>
+    `;
+    row.addEventListener("click", () => {
+      browser.runtime.sendMessage({ action: "cancelSnooze", index: i });
+      row.remove();
+      countEl.textContent = Number(countEl.textContent) - 1;
+    });
+    listEl.appendChild(row);
+  }
 }
 
 // Helpers
