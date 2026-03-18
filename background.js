@@ -2,6 +2,8 @@
 importScripts("lib/tracker.js");
 importScripts("lib/classifier.js");
 importScripts("lib/clusterer.js");
+importScripts("lib/rescue.js");
+importScripts("lib/deduplicator.js");
 
 // Initialize existing tabs
 browser.tabs.query({}).then((existingTabs) => {
@@ -12,6 +14,9 @@ browser.tabs.query({}).then((existingTabs) => {
   const active = existingTabs.find((t) => t.active);
   if (active) tracker.focusTab(active.id);
 });
+
+// Initialize rescue list
+rescue.load();
 
 // Listen to tab events
 browser.tabs.onCreated.addListener((tab) => {
