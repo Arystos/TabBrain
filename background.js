@@ -75,4 +75,19 @@ setInterval(runProcess, 5 * 60 * 1000);
 // Initial run after 1 second
 setTimeout(runProcess, 1000);
 
+// Handle messages from popup
+browser.runtime.onMessage.addListener(async (msg) => {
+  if (msg.action === "closeDuplicates") {
+    await deduplicator.closeDuplicates(tracker.getAllTabs());
+  } else if (msg.action === "closeStale") {
+    const allTabData = tracker.getAllTabs();
+    const classifications = classifier.classifyAll(allTabData);
+    await staleCleaner.cleanStaleTabs(allTabData, classifications);
+  } else if (msg.action === "rescueReopen") {
+    await rescue.reopen(msg.index);
+  } else if (msg.action === "rescueClear") {
+    await rescue.clear();
+  }
+});
+
 console.log("TabBrain loaded");

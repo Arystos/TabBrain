@@ -6,8 +6,41 @@
 </head>
 <body>
   <div id="app">
-    <h1>TabBrain</h1>
-    <p>Loading...</p>
+    <!-- Stats Bar -->
+    <header id="stats-bar">
+      <div class="stats-left">
+        <span id="total-count" class="stat-pill">0 tabs</span>
+        <span id="dup-count" class="stat-pill dup">0 duplicates</span>
+        <span id="stale-count" class="stat-pill stale">0 stale</span>
+        <span id="topic-count" class="stat-pill topic">0 topics</span>
+      </div>
+      <div class="stats-right">
+        <button id="btn-close-dups" class="action-btn" title="Close all duplicates">Close dups</button>
+        <button id="btn-close-stale" class="action-btn" title="Close all stale tabs">Close stale</button>
+      </div>
+    </header>
+
+    <!-- Search -->
+    <div id="search-bar">
+      <input type="text" id="search-input" placeholder="Search tabs..." />
+    </div>
+
+    <!-- Topic Groups -->
+    <div id="groups-container"></div>
+
+    <!-- Rescue List -->
+    <details id="rescue-section">
+      <summary>Rescue List (<span id="rescue-count">0</span>)</summary>
+      <div id="rescue-list"></div>
+      <div id="rescue-actions">
+        <button id="btn-clear-rescue" class="action-btn danger">Clear all</button>
+      </div>
+    </details>
+
+    <!-- Settings link -->
+    <footer>
+      <button id="btn-settings" class="link-btn">Settings</button>
+    </footer>
   </div>
   <script src="popup.js"></script>
 </body>
