@@ -190,6 +190,7 @@ body {
 .tab-status.save-for-later { background: #fefcbf; color: #975a16; }
 .tab-status.duplicate { background: #fed7d7; color: #c53030; }
 .tab-status.stale { background: #feebc8; color: #c05621; }
+.tab-status.suspended { background: #e9d8fd; color: #6b46c1; }
 
 .tab-close-btn {
   background: none;
@@ -253,12 +254,6 @@ body {
 #rescue-actions {
   padding: 6px 12px;
   border-top: 1px solid #e2e6ea;
-}
-
-/* Footer */
-footer {
-  margin-top: 8px;
-  text-align: center;
 }
 
 /* Empty state */
