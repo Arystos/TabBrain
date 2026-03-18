@@ -104,6 +104,17 @@ async function runProcess() {
         lastUpdated: Date.now(),
       },
     });
+
+    // Update badge
+    const dupCount = Object.values(classifications).filter((s) => s === "duplicate").length;
+    const staleCount = Object.values(classifications).filter((s) => s === "stale").length;
+    const actionable = dupCount + staleCount;
+    if (actionable > 0) {
+      await browser.action.setBadgeText({ text: String(actionable) });
+      await browser.action.setBadgeBackgroundColor({ color: "#e53e3e" });
+    } else {
+      await browser.action.setBadgeText({ text: "" });
+    }
   } finally {
     isProcessing = false;
   }
