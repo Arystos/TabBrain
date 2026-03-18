@@ -47,6 +47,7 @@ function renderGroups(clusters, classifications, tabData) {
     card.className = "group-card";
 
     const tabCount = cluster.tabIds.length;
+    const saveForLaterIds = cluster.tabIds.filter((id) => classifications[id] === "save-for-later");
 
     card.innerHTML = `
       <div class="group-header">
@@ -57,6 +58,7 @@ function renderGroups(clusters, classifications, tabData) {
         <div class="group-actions">
           <button class="action-btn secondary btn-bookmark-group" data-tabs='${JSON.stringify(cluster.tabIds)}'>Bookmark</button>
           <button class="action-btn secondary btn-close-group" data-tabs='${JSON.stringify(cluster.tabIds)}'>Close</button>
+          ${saveForLaterIds.length > 0 ? `<button class="action-btn secondary btn-archive-group" data-tabs='${JSON.stringify(saveForLaterIds)}'>Archive</button>` : ""}
         </div>
       </div>
       <div class="group-body"></div>
@@ -105,7 +107,16 @@ function renderGroups(clusters, classifications, tabData) {
       const tabId = Number(btn.dataset.tabId);
       try {
         await browser.tabs.remove(tabId);
+        const card = btn.closest(".group-card");
         btn.closest(".tab-row").remove();
+        // Remove empty group card
+        const remaining = card.querySelectorAll(".tab-row");
+        if (remaining.length === 0) {
+          card.remove();
+        } else {
+          // Update count badge
+          card.querySelector(".group-count").textContent = remaining.length;
+        }
       } catch (err) {
         console.warn("Failed to close tab", err);
       }
@@ -142,6 +153,41 @@ function renderGroups(clusters, classifications, tabData) {
         btn.disabled = true;
       } catch (err) {
         console.warn("Failed to bookmark group", err);
+      }
+    });
+  });
+
+  // Archive group buttons
+  container.querySelectorAll(".btn-archive-group").forEach((btn) => {
+    btn.addEventListener("click", async (e) => {
+      e.stopPropagation();
+      const archiveTabIds = JSON.parse(btn.dataset.tabs);
+      const groupName = btn.closest(".group-card").querySelector(".group-name").firstChild.textContent.trim();
+      try {
+        const folder = await browser.bookmarks.create({ title: `TabBrain Archive: ${groupName}` });
+        for (const id of archiveTabIds) {
+          const td = tabData[id];
+          if (td) {
+            await browser.bookmarks.create({ parentId: folder.id, title: td.title, url: td.url });
+          }
+          try { await browser.tabs.remove(Number(id)); } catch {}
+        }
+        // Remove archived tab rows from UI
+        archiveTabIds.forEach((id) => {
+          const row = document.querySelector(`.tab-row[data-tab-id="${id}"]`);
+          if (row) row.remove();
+        });
+        const card = btn.closest(".group-card");
+        const remaining = card.querySelectorAll(".tab-row");
+        if (remaining.length === 0) {
+          card.remove();
+        } else {
+          card.querySelector(".group-count").textContent = remaining.length;
+        }
+        btn.textContent = "Archived!";
+        btn.disabled = true;
+      } catch (err) {
+        console.warn("Failed to archive", err);
       }
     });
   });
