@@ -7,6 +7,7 @@ const DEFAULTS = {
   activeMins: 60,
   saveLaterSecs: 10,
   clusterThreshold: 0.25,
+  showNotifications: false,
   excludedDomains: "",
 };
 
@@ -32,6 +33,7 @@ function loadForm(s) {
   document.getElementById("set-active-mins").value = s.activeMins;
   document.getElementById("set-savelater-secs").value = s.saveLaterSecs;
   document.getElementById("set-cluster-threshold").value = s.clusterThreshold;
+  document.getElementById("set-notifications").checked = s.showNotifications;
   document.getElementById("set-excluded").value = s.excludedDomains;
 }
 
@@ -43,6 +45,7 @@ async function saveSettings() {
     activeMins: Number(document.getElementById("set-active-mins").value),
     saveLaterSecs: Number(document.getElementById("set-savelater-secs").value),
     clusterThreshold: Number(document.getElementById("set-cluster-threshold").value),
+    showNotifications: document.getElementById("set-notifications").checked,
     excludedDomains: document.getElementById("set-excluded").value,
   };
   await browser.storage.local.set({ tabbrainSettings: settings });

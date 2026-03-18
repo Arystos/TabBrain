@@ -1,22 +1,26 @@
 // background.js
-importScripts("lib/tracker.js");
-importScripts("lib/classifier.js");
-importScripts("lib/clusterer.js");
-importScripts("lib/rescue.js");
-importScripts("lib/deduplicator.js");
-importScripts("lib/stalecleaner.js");
+// All lib scripts are loaded via manifest.json background.scripts
 
-// Initialize existing tabs
-browser.tabs.query({}).then((existingTabs) => {
+// Initialize existing tabs, settings, and rescue list — then run first process
+let initialized = false;
+let isProcessing = false;
+
+async function init() {
+  await rescue.load();
+  await loadSettings();
+
+  const existingTabs = await browser.tabs.query({});
   for (const tab of existingTabs) {
     tracker.initTab(tab.id, tab);
   }
   const active = existingTabs.find((t) => t.active);
   if (active) tracker.focusTab(active.id);
-});
 
-// Initialize rescue list
-rescue.load();
+  initialized = true;
+  await runProcess();
+}
+
+init();
 
 // Listen to tab events
 browser.tabs.onCreated.addListener((tab) => {
@@ -51,60 +55,64 @@ async function loadSettings() {
   self.tabbrainSettings = s;
 }
 
-loadSettings();
-
 // --- Central processing loop ---
 let processTimeout = null;
 
 function scheduleProcess() {
+  if (!initialized) return;
   if (processTimeout) clearTimeout(processTimeout);
   processTimeout = setTimeout(runProcess, 500);
 }
 
 async function runProcess() {
-  const settings = self.tabbrainSettings || {};
-  const allTabData = tracker.getAllTabs();
-  const classifications = classifier.classifyAll(allTabData);
-  const threshold = settings.clusterThreshold || 0.25;
-  const clusters = clusterer.clusterTabs(allTabData, tracker.getParentChain, threshold);
+  if (isProcessing) return;
+  isProcessing = true;
+  try {
+    const settings = self.tabbrainSettings || {};
+    const allTabData = tracker.getAllTabs();
+    const classifications = classifier.classifyAll(allTabData);
+    const threshold = settings.clusterThreshold || 0.25;
+    const clusters = clusterer.clusterTabs(allTabData, tracker.getParentChain, threshold);
 
-  // Auto-close duplicates (if enabled)
-  if (settings.autoCloseDups !== false) {
-    await deduplicator.closeDuplicates(allTabData, settings.excludedDomains);
+    const opts = { showNotifications: !!settings.showNotifications };
+
+    // Auto-close duplicates (if enabled)
+    if (settings.autoCloseDups !== false) {
+      await deduplicator.closeDuplicates(allTabData, settings.excludedDomains, opts);
+    }
+
+    // Auto-close stale tabs (if enabled)
+    if (settings.autoCloseStale !== false) {
+      await staleCleaner.cleanStaleTabs(allTabData, classifications, settings.excludedDomains, opts);
+    }
+
+    // Store state for popup
+    await browser.storage.local.set({
+      tabbrainState: {
+        classifications,
+        clusters,
+        tabData: allTabData,
+        lastUpdated: Date.now(),
+      },
+    });
+  } finally {
+    isProcessing = false;
   }
-
-  // Auto-close stale tabs (if enabled)
-  if (settings.autoCloseStale !== false) {
-    await staleCleaner.cleanStaleTabs(allTabData, classifications, settings.excludedDomains);
-  }
-
-  // Store state for popup
-  await browser.storage.local.set({
-    tabbrainState: {
-      classifications,
-      clusters,
-      tabData: allTabData,
-      lastUpdated: Date.now(),
-    },
-  });
 }
 
 // Run periodically (every 5 minutes) for stale detection
 setInterval(runProcess, 5 * 60 * 1000);
 
-// Initial run after 1 second
-setTimeout(runProcess, 1000);
-
 // Handle messages from popup
 browser.runtime.onMessage.addListener(async (msg) => {
   if (msg.action === "closeDuplicates") {
     const s = self.tabbrainSettings || {};
-    await deduplicator.closeDuplicates(tracker.getAllTabs(), s.excludedDomains);
+    await deduplicator.closeDuplicates(tracker.getAllTabs(), s.excludedDomains, { showNotifications: !!s.showNotifications });
   } else if (msg.action === "closeStale") {
     const s2 = self.tabbrainSettings || {};
     const allTabData = tracker.getAllTabs();
     const classifications = classifier.classifyAll(allTabData);
-    await staleCleaner.cleanStaleTabs(allTabData, classifications, s2.excludedDomains);
+    await staleCleaner.cleanStaleTabs(allTabData, classifications, s2.excludedDomains, { showNotifications: !!s2.showNotifications });
   } else if (msg.action === "rescueReopen") {
     await rescue.reopen(msg.index);
   } else if (msg.action === "rescueClear") {
