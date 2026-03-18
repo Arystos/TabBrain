@@ -97,6 +97,15 @@
       <textarea id="set-excluded" rows="4" style="width:100%;padding:6px;border:1px solid var(--border);border-radius:6px;font-size:11px;resize:vertical;background:var(--bg-input);color:var(--text-primary);"></textarea>
     </div>
 
+    <div class="setting-group">
+      <h3>Data</h3>
+      <div class="btn-row">
+        <button id="btn-export" class="action-btn secondary">Export tabs (JSON)</button>
+        <button id="btn-import" class="action-btn secondary">Import tabs</button>
+        <input type="file" id="import-file" accept=".json" style="display:none;">
+      </div>
+    </div>
+
     <div class="btn-row">
       <button id="btn-save" class="action-btn">Save settings</button>
       <button id="btn-reset" class="action-btn secondary">Reset defaults</button>

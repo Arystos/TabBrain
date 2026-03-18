@@ -30,6 +30,62 @@ document.addEventListener("DOMContentLoaded", async () => {
   document.getElementById("set-theme").addEventListener("change", (e) => {
     document.documentElement.setAttribute("data-theme", e.target.value);
   });
+
+  document.getElementById("btn-export").addEventListener("click", async () => {
+    const data = await browser.storage.local.get(["tabbrainState", "rescueList", "tabbrain_snoozed"]);
+    const state = data.tabbrainState || {};
+    const exportData = {
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      clusters: state.clusters || [],
+      tabData: state.tabData || {},
+      rescueList: data.rescueList || [],
+      snoozed: data.tabbrain_snoozed || [],
+    };
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `tabbrain-export-${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  });
+
+  document.getElementById("btn-import").addEventListener("click", () => {
+    document.getElementById("import-file").click();
+  });
+
+  document.getElementById("import-file").addEventListener("change", async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    try {
+      const text = await file.text();
+      const importData = JSON.parse(text);
+      if (importData.version !== 1) {
+        alert("Unsupported export format.");
+        return;
+      }
+      let tabCount = 0;
+      for (const cluster of (importData.clusters || [])) {
+        for (const tabId of cluster.tabIds) {
+          const td = importData.tabData[tabId];
+          if (td && td.url) {
+            await browser.tabs.create({ url: td.url, active: false });
+            tabCount++;
+          }
+        }
+      }
+      document.getElementById("btn-import").textContent = `Imported ${tabCount} tabs!`;
+      setTimeout(() => {
+        document.getElementById("btn-import").textContent = "Import tabs";
+      }, 2000);
+    } catch (err) {
+      alert("Failed to import: " + err.message);
+    }
+    e.target.value = "";
+  });
 });
 
 function loadForm(s) {
