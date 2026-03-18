@@ -39,6 +39,20 @@ browser.tabs.onRemoved.addListener((tabId) => {
   setTimeout(scheduleProcess, 100);
 });
 
+// --- Settings ---
+async function loadSettings() {
+  const data = await browser.storage.local.get("tabbrainSettings");
+  const s = data.tabbrainSettings || {};
+  classifier.updateSettings({
+    activeThresholdMs: (s.activeMins || 60) * 60 * 1000,
+    staleThresholdMs: (s.staleDays || 3) * 24 * 60 * 60 * 1000,
+    saveLaterMaxFocusMs: (s.saveLaterSecs || 10) * 1000,
+  });
+  self.tabbrainSettings = s;
+}
+
+loadSettings();
+
 // --- Central processing loop ---
 let processTimeout = null;
 
@@ -48,15 +62,21 @@ function scheduleProcess() {
 }
 
 async function runProcess() {
+  const settings = self.tabbrainSettings || {};
   const allTabData = tracker.getAllTabs();
   const classifications = classifier.classifyAll(allTabData);
-  const clusters = clusterer.clusterTabs(allTabData, tracker.getParentChain);
+  const threshold = settings.clusterThreshold || 0.25;
+  const clusters = clusterer.clusterTabs(allTabData, tracker.getParentChain, threshold);
 
-  // Auto-close duplicates
-  await deduplicator.closeDuplicates(allTabData);
+  // Auto-close duplicates (if enabled)
+  if (settings.autoCloseDups !== false) {
+    await deduplicator.closeDuplicates(allTabData);
+  }
 
-  // Auto-close stale tabs
-  await staleCleaner.cleanStaleTabs(allTabData, classifications);
+  // Auto-close stale tabs (if enabled)
+  if (settings.autoCloseStale !== false) {
+    await staleCleaner.cleanStaleTabs(allTabData, classifications);
+  }
 
   // Store state for popup
   await browser.storage.local.set({
@@ -87,6 +107,8 @@ browser.runtime.onMessage.addListener(async (msg) => {
     await rescue.reopen(msg.index);
   } else if (msg.action === "rescueClear") {
     await rescue.clear();
+  } else if (msg.action === "reloadSettings") {
+    await loadSettings();
   }
 });
 
