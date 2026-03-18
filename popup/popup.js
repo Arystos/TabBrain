@@ -2,6 +2,10 @@
 // Renders TabBrain popup UI from pre-computed state
 
 document.addEventListener("DOMContentLoaded", async () => {
+  const settingsData = await browser.storage.local.get("tabbrainSettings");
+  const theme = (settingsData.tabbrainSettings || {}).theme || "system";
+  document.documentElement.setAttribute("data-theme", theme);
+
   const data = await browser.storage.local.get(["tabbrainState", "rescueList"]);
   const state = data.tabbrainState || {};
   const rescueList = data.rescueList || [];

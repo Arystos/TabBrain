@@ -9,11 +9,13 @@ const DEFAULTS = {
   clusterThreshold: 0.25,
   showNotifications: false,
   excludedDomains: "",
+  theme: "system",
 };
 
 document.addEventListener("DOMContentLoaded", async () => {
   const data = await browser.storage.local.get("tabbrainSettings");
   const settings = { ...DEFAULTS, ...(data.tabbrainSettings || {}) };
+  document.documentElement.setAttribute("data-theme", settings.theme);
   loadForm(settings);
 
   document.getElementById("btn-save").addEventListener("click", saveSettings);
@@ -23,6 +25,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
   document.getElementById("btn-back").addEventListener("click", () => {
     window.location.href = "popup.html";
+  });
+
+  document.getElementById("set-theme").addEventListener("change", (e) => {
+    document.documentElement.setAttribute("data-theme", e.target.value);
   });
 });
 
@@ -35,6 +41,7 @@ function loadForm(s) {
   document.getElementById("set-cluster-threshold").value = s.clusterThreshold;
   document.getElementById("set-notifications").checked = s.showNotifications;
   document.getElementById("set-excluded").value = s.excludedDomains;
+  document.getElementById("set-theme").value = s.theme;
 }
 
 async function saveSettings() {
@@ -47,6 +54,7 @@ async function saveSettings() {
     clusterThreshold: Number(document.getElementById("set-cluster-threshold").value),
     showNotifications: document.getElementById("set-notifications").checked,
     excludedDomains: document.getElementById("set-excluded").value,
+    theme: document.getElementById("set-theme").value,
   };
   await browser.storage.local.set({ tabbrainSettings: settings });
   browser.runtime.sendMessage({ action: "reloadSettings" });
