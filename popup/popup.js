@@ -96,6 +96,17 @@ function renderGroups(clusters, classifications, tabData) {
         window.close();
       });
 
+      row.draggable = true;
+      row.addEventListener("dragstart", (e) => {
+        e.dataTransfer.setData("text/plain", tabId);
+        e.dataTransfer.effectAllowed = "move";
+        row.classList.add("dragging");
+      });
+      row.addEventListener("dragend", () => {
+        row.classList.remove("dragging");
+        document.querySelectorAll(".drag-over").forEach((el) => el.classList.remove("drag-over"));
+      });
+
       body.appendChild(row);
     }
 
@@ -106,8 +117,130 @@ function renderGroups(clusters, classifications, tabData) {
       body.classList.toggle("collapsed");
     });
 
+    body.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = "move";
+      card.classList.add("drag-over");
+    });
+    body.addEventListener("dragleave", (e) => {
+      if (!card.contains(e.relatedTarget)) {
+        card.classList.remove("drag-over");
+      }
+    });
+    body.addEventListener("drop", (e) => {
+      e.preventDefault();
+      card.classList.remove("drag-over");
+      const draggedTabId = e.dataTransfer.getData("text/plain");
+      const draggedRow = document.querySelector(`.tab-row[data-tab-id="${draggedTabId}"]`);
+      if (!draggedRow || draggedRow.closest(".group-card") === card) return;
+
+      const sourceCard = draggedRow.closest(".group-card");
+      body.appendChild(draggedRow);
+
+      // Update source group
+      const sourceRemaining = sourceCard.querySelectorAll(".tab-row");
+      if (sourceRemaining.length === 0) {
+        sourceCard.remove();
+      } else {
+        sourceCard.querySelector(".group-count").textContent = sourceRemaining.length;
+      }
+      // Update target group
+      card.querySelector(".group-count").textContent = body.querySelectorAll(".tab-row").length;
+
+      // Persist custom assignment
+      const groupName = card.querySelector(".group-name").firstChild.textContent.trim();
+      browser.runtime.sendMessage({
+        action: "assignTabToGroup",
+        tabId: Number(draggedTabId),
+        groupName,
+      });
+    });
+
+    header.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      card.classList.add("drag-over");
+      // Auto-expand collapsed groups
+      body.classList.remove("collapsed");
+    });
+
     container.appendChild(card);
   }
+
+  // New group drop zone
+  const newGroupZone = document.createElement("div");
+  newGroupZone.className = "group-card new-group-drop";
+  newGroupZone.innerHTML = `<div class="group-header"><span class="group-name">+ Drop here to create new group</span></div>`;
+
+  newGroupZone.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    newGroupZone.classList.add("drag-over");
+  });
+  newGroupZone.addEventListener("dragleave", () => {
+    newGroupZone.classList.remove("drag-over");
+  });
+  newGroupZone.addEventListener("drop", (e) => {
+    e.preventDefault();
+    newGroupZone.classList.remove("drag-over");
+    const draggedTabId = e.dataTransfer.getData("text/plain");
+    const draggedRow = document.querySelector(`.tab-row[data-tab-id="${draggedTabId}"]`);
+    if (!draggedRow) return;
+
+    // Show input for group name
+    const input = document.createElement("input");
+    input.className = "new-group-input";
+    input.placeholder = "Enter group name...";
+    input.autofocus = true;
+    newGroupZone.appendChild(input);
+    input.focus();
+
+    input.addEventListener("keydown", (ev) => {
+      if (ev.key === "Enter" && input.value.trim()) {
+        const groupName = input.value.trim();
+        // Create new group card
+        const newCard = document.createElement("div");
+        newCard.className = "group-card";
+        newCard.innerHTML = `
+          <div class="group-header">
+            <span class="group-name">${escapeHtml(groupName)} <span class="group-count">1</span></span>
+            <div class="group-actions">
+              <button class="action-btn secondary btn-close-group" data-tabs='[${draggedTabId}]'>Close</button>
+            </div>
+          </div>
+          <div class="group-body"></div>
+        `;
+        const newBody = newCard.querySelector(".group-body");
+
+        // Move tab from source
+        const sourceCard = draggedRow.closest(".group-card");
+        newBody.appendChild(draggedRow);
+
+        if (sourceCard) {
+          const sourceRemaining = sourceCard.querySelectorAll(".tab-row");
+          if (sourceRemaining.length === 0) sourceCard.remove();
+          else sourceCard.querySelector(".group-count").textContent = sourceRemaining.length;
+        }
+
+        container.insertBefore(newCard, newGroupZone);
+        input.remove();
+
+        // Persist
+        browser.runtime.sendMessage({
+          action: "assignTabToGroup",
+          tabId: Number(draggedTabId),
+          groupName,
+        });
+      } else if (ev.key === "Escape") {
+        input.remove();
+      }
+    });
+
+    input.addEventListener("blur", () => {
+      setTimeout(() => input.remove(), 200);
+    });
+  });
+
+  container.appendChild(newGroupZone);
 
   // Close individual tab buttons
   container.querySelectorAll(".tab-close-btn").forEach((btn) => {

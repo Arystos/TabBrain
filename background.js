@@ -143,6 +143,11 @@ browser.runtime.onMessage.addListener(async (msg) => {
     await snooze.cancelSnooze(msg.index);
   } else if (msg.action === "getSnoozed") {
     return snooze.getSnoozed();
+  } else if (msg.action === "assignTabToGroup") {
+    const data = await browser.storage.local.get("tabbrainCustomGroups");
+    const custom = data.tabbrainCustomGroups || {};
+    custom[msg.tabId] = msg.groupName;
+    await browser.storage.local.set({ tabbrainCustomGroups: custom });
   } else if (msg.action === "reloadSettings") {
     await loadSettings();
   }

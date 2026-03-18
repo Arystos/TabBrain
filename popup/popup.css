@@ -310,6 +310,15 @@ body {
   background: var(--bg-header);
 }
 
+/* Drag and drop */
+.tab-row.dragging { opacity: 0.4; }
+.group-card.drag-over { border-color: var(--focus-border); box-shadow: 0 0 0 2px rgba(66, 153, 225, 0.3); }
+.new-group-drop { border: 2px dashed var(--border); background: transparent; text-align: center; cursor: default; }
+.new-group-drop .group-header { justify-content: center; background: transparent; border: none; cursor: default; }
+.new-group-drop .group-name { color: var(--text-muted); font-weight: 400; font-size: 12px; }
+.new-group-drop.drag-over { border-color: var(--focus-border); background: rgba(66, 153, 225, 0.05); }
+.new-group-input { width: 100%; padding: 6px 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 12px; background: var(--bg-input); color: var(--text-primary); margin: 8px 0; }
+
 /* Empty state */
 .empty-state {
   text-align: center;
