@@ -1,6 +1,7 @@
 // background.js
 importScripts("lib/tracker.js");
 importScripts("lib/classifier.js");
+importScripts("lib/clusterer.js");
 
 // Initialize existing tabs
 browser.tabs.query({}).then((existingTabs) => {
