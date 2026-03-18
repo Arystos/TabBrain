@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0097a7"/>
+      <stop offset="100%" stop-color="#1565c0"/>
+    </linearGradient>
+  </defs>
+  <!-- Brain shape -->
+  <path d="M24 6C16 6 10 11 10 18c0 3 1.2 5.5 3 7.5C14.5 27.5 15 30 15 33v3c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-3c0-3 .5-5.5 2-7.5 1.8-2 3-4.5 3-7.5 0-7-6-12-14-12z" fill="url(#bg)"/>
+  <!-- Brain divide -->
+  <path d="M24 8v26" stroke="#fafafa" stroke-width="1.2" stroke-linecap="round" fill="none"/>
+  <!-- Left hemisphere folds -->
+  <path d="M23 13c-3 0-6 1.5-7 4" stroke="#fafafa" stroke-width="1.2" stroke-linecap="round" fill="none"/>
+  <path d="M23 19c-4 0-8 1.5-9 4" stroke="#fafafa" stroke-width="1.2" stroke-linecap="round" fill="none"/>
+  <path d="M23 25c-3 0-6 1-7 3" stroke="#fafafa" stroke-width="1.2" stroke-linecap="round" fill="none"/>
+  <!-- Right hemisphere folds -->
+  <path d="M25 13c3 0 6 1.5 7 4" stroke="#fafafa" stroke-width="1.2" stroke-linecap="round" fill="none"/>
+  <path d="M25 19c4 0 8 1.5 9 4" stroke="#fafafa" stroke-width="1.2" stroke-linecap="round" fill="none"/>
+  <path d="M25 25c3 0 6 1 7 3" stroke="#fafafa" stroke-width="1.2" stroke-linecap="round" fill="none"/>
+  <!-- Base connector lines -->
+  <line x1="18" y1="38" x2="18" y2="42" stroke="url(#bg)" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="24" y1="38" x2="24" y2="42" stroke="url(#bg)" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="30" y1="38" x2="30" y2="42" stroke="url(#bg)" stroke-width="1.5" stroke-linecap="round"/>
+</svg>
