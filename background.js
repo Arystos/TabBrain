@@ -70,12 +70,12 @@ async function runProcess() {
 
   // Auto-close duplicates (if enabled)
   if (settings.autoCloseDups !== false) {
-    await deduplicator.closeDuplicates(allTabData);
+    await deduplicator.closeDuplicates(allTabData, settings.excludedDomains);
   }
 
   // Auto-close stale tabs (if enabled)
   if (settings.autoCloseStale !== false) {
-    await staleCleaner.cleanStaleTabs(allTabData, classifications);
+    await staleCleaner.cleanStaleTabs(allTabData, classifications, settings.excludedDomains);
   }
 
   // Store state for popup
@@ -98,11 +98,13 @@ setTimeout(runProcess, 1000);
 // Handle messages from popup
 browser.runtime.onMessage.addListener(async (msg) => {
   if (msg.action === "closeDuplicates") {
-    await deduplicator.closeDuplicates(tracker.getAllTabs());
+    const s = self.tabbrainSettings || {};
+    await deduplicator.closeDuplicates(tracker.getAllTabs(), s.excludedDomains);
   } else if (msg.action === "closeStale") {
+    const s2 = self.tabbrainSettings || {};
     const allTabData = tracker.getAllTabs();
     const classifications = classifier.classifyAll(allTabData);
-    await staleCleaner.cleanStaleTabs(allTabData, classifications);
+    await staleCleaner.cleanStaleTabs(allTabData, classifications, s2.excludedDomains);
   } else if (msg.action === "rescueReopen") {
     await rescue.reopen(msg.index);
   } else if (msg.action === "rescueClear") {
