@@ -23,6 +23,25 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   setupSearch();
   setupActions();
+
+  // View toggle
+  const viewBtns = document.querySelectorAll(".view-btn");
+  viewBtns.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      viewBtns.forEach((b) => b.classList.remove("active"));
+      btn.classList.add("active");
+      const view = btn.dataset.view;
+      let groups;
+      if (view === "window") {
+        groups = groupByWindow(tabData);
+      } else if (view === "container") {
+        groups = groupByContainer(tabData, state.containers || {});
+      } else {
+        groups = clusters;
+      }
+      renderGroups(groups, classifications, tabData);
+    });
+  });
 });
 
 function renderStats(classifications, clusters) {
@@ -57,10 +76,12 @@ function renderGroups(clusters, classifications, tabData) {
     const tabCount = cluster.tabIds.length;
     const saveForLaterIds = cluster.tabIds.filter((id) => classifications[id] === "save-for-later");
 
+    const colorDot = cluster.color ? `<span class="container-dot" style="background:${cluster.color}"></span>` : "";
+
     card.innerHTML = `
       <div class="group-header">
         <span class="group-name">
-          ${escapeHtml(cluster.name)}
+          ${colorDot}${escapeHtml(cluster.name)}
           <span class="group-count">${tabCount}</span>
         </span>
         <div class="group-actions">
@@ -494,6 +515,29 @@ function renderSnoozedList(snoozedList) {
     });
     listEl.appendChild(row);
   }
+}
+
+function groupByWindow(tabData) {
+  const groups = {};
+  for (const [tabId, data] of Object.entries(tabData)) {
+    const key = data.windowId || "unknown";
+    if (!groups[key]) groups[key] = { name: `Window ${Object.keys(groups).length + 1}`, tabIds: [] };
+    groups[key].tabIds.push(Number(tabId));
+  }
+  return Object.values(groups);
+}
+
+function groupByContainer(tabData, containers) {
+  const groups = {};
+  for (const [tabId, data] of Object.entries(tabData)) {
+    const key = data.cookieStoreId || "firefox-default";
+    const containerInfo = containers[key];
+    const name = containerInfo ? containerInfo.name : "Default";
+    const color = containerInfo ? containerInfo.color : null;
+    if (!groups[key]) groups[key] = { name, tabIds: [], color };
+    groups[key].tabIds.push(Number(tabId));
+  }
+  return Object.values(groups);
 }
 
 // Helpers

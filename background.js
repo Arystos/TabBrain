@@ -109,12 +109,23 @@ async function runProcess() {
       await staleCleaner.cleanStaleTabs(allTabData, classifications, settings.excludedDomains, opts);
     }
 
+    let containers = {};
+    try {
+      const identities = await browser.contextualIdentities.query({});
+      for (const id of identities) {
+        containers[id.cookieStoreId] = { name: id.name, color: id.color, icon: id.icon };
+      }
+    } catch (e) {
+      // contextualIdentities may not be available if containers aren't enabled
+    }
+
     // Store state for popup
     await browser.storage.local.set({
       tabbrainState: {
         classifications,
         clusters,
         tabData: allTabData,
+        containers,
         lastUpdated: Date.now(),
       },
     });
