@@ -18,6 +18,16 @@ async function init() {
 
   await snooze.checkWakeups();
 
+  await frequency.load();
+
+  // Decay frequency data once per day
+  const lastDecayData = await browser.storage.local.get("tabbrain_lastDecay");
+  const lastDecay = lastDecayData.tabbrain_lastDecay || 0;
+  if (Date.now() - lastDecay > 24 * 60 * 60 * 1000) {
+    await frequency.decay();
+    await browser.storage.local.set({ tabbrain_lastDecay: Date.now() });
+  }
+
   initialized = true;
   await runProcess();
 }
@@ -42,8 +52,12 @@ browser.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   scheduleProcess();
 });
 
-browser.tabs.onActivated.addListener(({ tabId }) => {
+browser.tabs.onActivated.addListener(async ({ tabId }) => {
   tracker.focusTab(tabId);
+  try {
+    const tab = await browser.tabs.get(tabId);
+    if (tab.url) frequency.recordVisit(tab.url);
+  } catch {}
   scheduleProcess();
 });
 
@@ -121,7 +135,10 @@ async function runProcess() {
 }
 
 // Run periodically (every 5 minutes) for stale detection
-setInterval(runProcess, 5 * 60 * 1000);
+setInterval(async () => {
+  await runProcess();
+  await frequency.save();
+}, 5 * 60 * 1000);
 
 // Handle messages from popup
 browser.runtime.onMessage.addListener(async (msg) => {

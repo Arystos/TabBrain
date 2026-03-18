@@ -13,6 +13,7 @@
       "lib/deduplicator.js",
       "lib/stalecleaner.js",
       "lib/snooze.js",
+      "lib/frequency.js",
       "background.js"
     ]
   },
