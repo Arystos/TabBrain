@@ -5,6 +5,7 @@ Smart tab manager for Firefox — automatically groups tabs by topic, detects du
 ![Firefox](https://img.shields.io/badge/Firefox-109%2B-FF7139?logo=firefox-browser&logoColor=white)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 ![Version](https://img.shields.io/badge/version-0.3.0-green)
+[![Ko-fi](https://img.shields.io/badge/Ko--fi-Support%20this%20project-FF5E5B?logo=ko-fi&logoColor=white)](https://ko-fi.com/arystos)
 
 ## Why TabBrain?
 
@@ -137,6 +138,12 @@ Settings now open in a full browser tab. If it's still opening in the popup, rel
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+## Support
+
+If you enjoy this project, consider buying me a coffee!
+
+[![Ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/arystos)
 
 ## License
 
