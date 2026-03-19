@@ -2,7 +2,8 @@
 
 Smart tab manager for Firefox — automatically groups tabs by topic, detects duplicates, cleans stale tabs, and keeps a rescue list so you never lose a tab again.
 
-![Firefox](https://img.shields.io/badge/Firefox-109%2B-FF7139?logo=firefox-browser&logoColor=white)
+![Firefox](https://img.shields.io/badge/Firefox-140%2B-FF7139?logo=firefox-browser&logoColor=white)
+![Android](https://img.shields.io/badge/Firefox%20Android-142%2B-FF7139?logo=firefox-browser&logoColor=white)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 ![Version](https://img.shields.io/badge/version-0.3.0-green)
 [![Ko-fi](https://img.shields.io/badge/Ko--fi-Support%20this%20project-FF5E5B?logo=ko-fi&logoColor=white)](https://ko-fi.com/arystos)
@@ -26,7 +27,7 @@ If you're the kind of person who has 50+ tabs open and loses track of what you w
 
 ### From Firefox Add-ons (AMO)
 
-> Coming soon — submission in progress.
+> Submitted and pending review — link will be added once approved.
 
 ### Manual Install (for development)
 
