@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <defs>
+    <linearGradient id="g1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3b82f6"/>
+      <stop offset="100%" stop-color="#06b6d4"/>
+    </linearGradient>
+    <linearGradient id="g2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2563eb"/>
+      <stop offset="100%" stop-color="#0891b2"/>
+    </linearGradient>
+  </defs>
+  <!-- Rounded square base -->
+  <rect x="5" y="5" width="118" height="118" rx="28" fill="url(#g1)"/>
+  <!-- Brain left hemisphere -->
+  <path d="M37 80c0-15 8-27 20-32C61 46 64 42 64 38v0c0 4-3 8-7 10C45 53 37 65 37 80c0 9.5 4 17.5 10.5 23 2 1.6 3.4 4 3.5 6.5H41V80" fill="none" stroke="#fff" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.95"/>
+  <!-- Brain right hemisphere -->
+  <path d="M91 80c0-15-8-27-20-32C67 46 64 42 64 38v0c0 4 3 8 7 10C83 53 91 65 91 80c0 9.5-4 17.5-10.5 23-2 1.6-3.4 4-3.5 6.5H87V80" fill="none" stroke="#fff" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.95"/>
+  <!-- Brain folds left -->
+  <path d="M59 59c-7 2-12 7-14.5 13.5" stroke="#fff" stroke-width="3.5" stroke-linecap="round" fill="none" opacity="0.6"/>
+  <path d="M59 78c-8 2-14.5 8-17 16" stroke="#fff" stroke-width="3.5" stroke-linecap="round" fill="none" opacity="0.45"/>
+  <path d="M59 94c-5 1.5-8.5 4-11 9" stroke="#fff" stroke-width="3.5" stroke-linecap="round" fill="none" opacity="0.3"/>
+  <!-- Brain folds right -->
+  <path d="M69 59c7 2 12 7 14.5 13.5" stroke="#fff" stroke-width="3.5" stroke-linecap="round" fill="none" opacity="0.6"/>
+  <path d="M69 78c8 2 14.5 8 17 16" stroke="#fff" stroke-width="3.5" stroke-linecap="round" fill="none" opacity="0.45"/>
+  <path d="M69 94c5 1.5 8.5 4 11 9" stroke="#fff" stroke-width="3.5" stroke-linecap="round" fill="none" opacity="0.3"/>
+  <!-- Tab indicators at top -->
+  <rect x="23" y="18" width="21" height="9" rx="3" fill="#fff" opacity="0.45"/>
+  <rect x="28" y="21" width="11" height="2.5" rx="1.2" fill="url(#g1)" opacity="0.4"/>
+  <rect x="48" y="14" width="32" height="13" rx="4.5" fill="#fff" opacity="0.92"/>
+  <rect x="54" y="18.5" width="20" height="3" rx="1.5" fill="url(#g2)" opacity="0.5"/>
+  <rect x="84" y="18" width="21" height="9" rx="3" fill="#fff" opacity="0.45"/>
+  <rect x="89" y="21" width="11" height="2.5" rx="1.2" fill="url(#g1)" opacity="0.4"/>
+  <!-- Active tab dot -->
+  <circle cx="64" cy="20.5" r="2.8" fill="url(#g2)"/>
+</svg>

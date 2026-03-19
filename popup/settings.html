@@ -5,45 +5,164 @@
   <link rel="stylesheet" href="themes.css">
   <link rel="stylesheet" href="popup.css">
   <style>
-    body { width: 380px; }
-    .setting-group { margin-bottom: 16px; }
-    .setting-group h3 { font-size: 13px; margin-bottom: 8px; color: var(--text-primary); }
+    body {
+      width: auto;
+      min-height: 100vh;
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      background: var(--bg-primary);
+    }
+    #app {
+      width: 100%;
+      max-width: 520px;
+      padding: 32px 20px 48px;
+    }
+    .settings-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .settings-header h1 {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin: 0;
+    }
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      font-size: 13px;
+      color: var(--focus-border);
+      cursor: pointer;
+      background: none;
+      border: none;
+      padding: 4px 0;
+    }
+    .back-link:hover { opacity: 0.8; }
+    .setting-group {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px 18px;
+      margin-bottom: 14px;
+    }
+    .setting-group h3 {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin: 0 0 12px 0;
+      color: var(--text-muted);
+    }
     .setting-row {
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 6px 0; font-size: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      font-size: 13px;
     }
-    label { color: var(--text-secondary); }
+    .setting-row + .setting-row {
+      border-top: 1px solid var(--border);
+    }
+    .setting-row label { color: var(--text-secondary); }
     input[type="number"] {
-      width: 60px; padding: 4px 8px; border: 1px solid var(--border);
-      border-radius: 6px; font-size: 12px; text-align: center;
-      background: var(--bg-input); color: var(--text-primary);
+      width: 64px;
+      padding: 5px 8px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 13px;
+      text-align: center;
+      background: var(--bg-input);
+      color: var(--text-primary);
     }
-    .toggle { position: relative; width: 36px; height: 20px; }
+    input[type="number"]:focus {
+      outline: none;
+      border-color: var(--focus-border);
+      box-shadow: 0 0 0 2px rgba(66, 153, 225, 0.15);
+    }
+    select {
+      padding: 5px 10px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 13px;
+      background: var(--bg-input);
+      color: var(--text-primary);
+    }
+    select:focus {
+      outline: none;
+      border-color: var(--focus-border);
+    }
+    textarea {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 12px;
+      resize: vertical;
+      background: var(--bg-input);
+      color: var(--text-primary);
+      box-sizing: border-box;
+    }
+    textarea:focus {
+      outline: none;
+      border-color: var(--focus-border);
+      box-shadow: 0 0 0 2px rgba(66, 153, 225, 0.15);
+    }
+    .toggle { position: relative; width: 40px; height: 22px; flex-shrink: 0; }
     .toggle input { opacity: 0; width: 0; height: 0; }
     .toggle .slider {
-      position: absolute; inset: 0; background: #cbd5e0; border-radius: 20px;
+      position: absolute; inset: 0; background: #cbd5e0; border-radius: 22px;
       cursor: pointer; transition: 0.2s;
     }
     .toggle .slider::before {
-      content: ""; position: absolute; height: 14px; width: 14px;
+      content: ""; position: absolute; height: 16px; width: 16px;
       left: 3px; bottom: 3px; background: white; border-radius: 50%;
       transition: 0.2s;
     }
     .toggle input:checked + .slider { background: #48bb78; }
-    .toggle input:checked + .slider::before { transform: translateX(16px); }
-    .btn-row { display: flex; gap: 8px; margin-top: 12px; }
-    .back-link { display: block; margin-bottom: 12px; font-size: 12px; color: var(--focus-border); cursor: pointer; background: none; border: none; }
+    .toggle input:checked + .slider::before { transform: translateX(18px); }
+    .hint {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+      line-height: 1.5;
+    }
+    #freq-domains {
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+    .btn-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 4px;
+    }
+    .footer-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+    .footer-actions .action-btn {
+      flex: 1;
+      padding: 10px 16px;
+      font-size: 13px;
+      border-radius: 8px;
+    }
   </style>
 </head>
 <body>
   <div id="app">
-    <button class="back-link" id="btn-back">&larr; Back</button>
+    <div class="settings-header">
+      <button class="back-link" id="btn-back">&larr; Back</button>
+      <h1>TabBrain Settings</h1>
+    </div>
 
     <div class="setting-group">
       <h3>Appearance</h3>
       <div class="setting-row">
         <label>Theme</label>
-        <select id="set-theme" style="padding:4px 8px;border:1px solid var(--border);border-radius:6px;font-size:12px;background:var(--bg-input);color:var(--text-primary);">
+        <select id="set-theme">
           <option value="system">System</option>
           <option value="light">Light</option>
           <option value="dark">Dark</option>
@@ -93,8 +212,14 @@
 
     <div class="setting-group">
       <h3>Excluded Domains</h3>
-      <p style="font-size:11px;color:var(--text-muted);margin-bottom:6px;">Tabs on these domains will never be auto-closed (one per line):</p>
-      <textarea id="set-excluded" rows="4" style="width:100%;padding:6px;border:1px solid var(--border);border-radius:6px;font-size:11px;resize:vertical;background:var(--bg-input);color:var(--text-primary);"></textarea>
+      <p class="hint">Tabs on these domains will never be auto-closed (one per line):</p>
+      <textarea id="set-excluded" rows="4"></textarea>
+    </div>
+
+    <div class="setting-group">
+      <h3>Protected Domains</h3>
+      <p class="hint">Domains you visit frequently are auto-protected from being closed. Threshold: 10+ visits.</p>
+      <div id="freq-domains"></div>
     </div>
 
     <div class="setting-group">
@@ -106,7 +231,7 @@
       </div>
     </div>
 
-    <div class="btn-row">
+    <div class="footer-actions">
       <button id="btn-save" class="action-btn">Save settings</button>
       <button id="btn-reset" class="action-btn secondary">Reset defaults</button>
     </div>

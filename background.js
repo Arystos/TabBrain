@@ -36,7 +36,10 @@ init();
 
 // Snooze alarm handler
 browser.alarms.onAlarm.addListener(async (alarm) => {
-  if (alarm.name.startsWith("snooze-")) {
+  if (alarm.name === "tabbrain-periodic") {
+    await runProcess();
+    await frequency.save();
+  } else if (alarm.name.startsWith("snooze-")) {
     await snooze.checkWakeups();
   }
 });
@@ -95,7 +98,36 @@ async function runProcess() {
     const allTabData = tracker.getAllTabs();
     const classifications = classifier.classifyAll(allTabData);
     const threshold = settings.clusterThreshold || 0.25;
-    const clusters = clusterer.clusterTabs(allTabData, tracker.getParentChain, threshold);
+    let clusters = clusterer.clusterTabs(allTabData, tracker.getParentChain, threshold);
+
+    // Apply custom group assignments (from drag-and-drop)
+    const customData = await browser.storage.local.get("tabbrainCustomGroups");
+    const customGroups = customData.tabbrainCustomGroups || {};
+    // Remove stale assignments for tabs that no longer exist
+    const allTabIds = new Set(Object.keys(allTabData).map(Number));
+    for (const tabId of Object.keys(customGroups)) {
+      if (!allTabIds.has(Number(tabId))) delete customGroups[tabId];
+    }
+    // Move tabs to their custom-assigned groups
+    for (const [tabId, groupName] of Object.entries(customGroups)) {
+      const tid = Number(tabId);
+      // Remove from current cluster
+      for (const cluster of clusters) {
+        const idx = cluster.tabIds.indexOf(tid);
+        if (idx !== -1) { cluster.tabIds.splice(idx, 1); break; }
+      }
+      // Add to target group (create if needed)
+      let target = clusters.find((c) => c.name === groupName);
+      if (!target) {
+        target = { name: groupName, tabIds: [] };
+        clusters.push(target);
+      }
+      target.tabIds.push(tid);
+    }
+    // Remove empty clusters
+    clusters = clusters.filter((c) => c.tabIds.length > 0);
+    // Save cleaned custom groups
+    await browser.storage.local.set({ tabbrainCustomGroups: customGroups });
 
     const opts = { showNotifications: !!settings.showNotifications };
 
@@ -145,11 +177,8 @@ async function runProcess() {
   }
 }
 
-// Run periodically (every 5 minutes) for stale detection
-setInterval(async () => {
-  await runProcess();
-  await frequency.save();
-}, 5 * 60 * 1000);
+// Run periodically (every 5 minutes) for stale detection — use alarms for MV3 reliability
+browser.alarms.create("tabbrain-periodic", { periodInMinutes: 5 });
 
 // Handle messages from popup
 browser.runtime.onMessage.addListener(async (msg) => {
@@ -181,4 +210,4 @@ browser.runtime.onMessage.addListener(async (msg) => {
   }
 });
 
-console.log("TabBrain loaded");
+// TabBrain initialized

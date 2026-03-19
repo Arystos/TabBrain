@@ -1,9 +1,19 @@
 {
   "manifest_version": 3,
   "name": "TabBrain",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Smart tab triage — auto-detects duplicates, clusters by topic, cleans stale tabs, keeps a rescue list.",
-  "permissions": ["tabs", "storage", "notifications", "bookmarks", "alarms"],
+  "permissions": ["tabs", "storage", "notifications", "bookmarks", "alarms", "contextualIdentities"],
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "tabbrain@aristide.dev",
+      "strict_min_version": "109.0"
+    }
+  },
+  "options_ui": {
+    "page": "popup/settings.html",
+    "open_in_tab": true
+  },
   "background": {
     "scripts": [
       "lib/tracker.js",
@@ -19,8 +29,8 @@
   },
   "action": {
     "default_popup": "popup/popup.html",
-    "default_icon": { "48": "icons/icon-48.svg", "96": "icons/icon-96.svg" },
+    "default_icon": { "16": "icons/icon-16.svg", "48": "icons/icon-48.svg", "96": "icons/icon-96.svg" },
     "default_title": "TabBrain"
   },
-  "icons": { "48": "icons/icon-48.svg", "96": "icons/icon-96.svg" }
+  "icons": { "16": "icons/icon-16.svg", "48": "icons/icon-48.svg", "96": "icons/icon-96.svg", "128": "icons/icon-128.svg" }
 }

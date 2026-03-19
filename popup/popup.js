@@ -1,22 +1,48 @@
 // popup/popup.js
 // Renders TabBrain popup UI from pre-computed state
 
+// Shared popup state — updated on load and on storage changes
+let popupState = { classifications: {}, clusters: [], tabData: {}, containers: {} };
+
+function getActiveView() {
+  const active = document.querySelector(".view-btn.active");
+  return active ? active.dataset.view : "topic";
+}
+
+function renderCurrentView() {
+  const { classifications, clusters, tabData, containers } = popupState;
+  const view = getActiveView();
+  let groups;
+  if (view === "window") {
+    groups = groupByWindow(tabData);
+  } else if (view === "container") {
+    groups = groupByContainer(tabData, containers);
+  } else {
+    groups = clusters;
+  }
+  renderStats(classifications, clusters);
+  renderGroups(groups, classifications, tabData);
+}
+
+async function loadAndRender() {
+  const data = await browser.storage.local.get(["tabbrainState", "rescueList"]);
+  const state = data.tabbrainState || {};
+  popupState = {
+    classifications: state.classifications || {},
+    clusters: state.clusters || [],
+    tabData: state.tabData || {},
+    containers: state.containers || {},
+  };
+  renderCurrentView();
+  renderRescueList(data.rescueList || []);
+}
+
 document.addEventListener("DOMContentLoaded", async () => {
   const settingsData = await browser.storage.local.get("tabbrainSettings");
   const theme = (settingsData.tabbrainSettings || {}).theme || "system";
   document.documentElement.setAttribute("data-theme", theme);
 
-  const data = await browser.storage.local.get(["tabbrainState", "rescueList"]);
-  const state = data.tabbrainState || {};
-  const rescueList = data.rescueList || [];
-
-  const classifications = state.classifications || {};
-  const clusters = state.clusters || [];
-  const tabData = state.tabData || {};
-
-  renderStats(classifications, clusters);
-  renderGroups(clusters, classifications, tabData);
-  renderRescueList(rescueList);
+  await loadAndRender();
 
   const snoozedData = await browser.runtime.sendMessage({ action: "getSnoozed" });
   renderSnoozedList(snoozedData || []);
@@ -30,17 +56,15 @@ document.addEventListener("DOMContentLoaded", async () => {
     btn.addEventListener("click", () => {
       viewBtns.forEach((b) => b.classList.remove("active"));
       btn.classList.add("active");
-      const view = btn.dataset.view;
-      let groups;
-      if (view === "window") {
-        groups = groupByWindow(tabData);
-      } else if (view === "container") {
-        groups = groupByContainer(tabData, state.containers || {});
-      } else {
-        groups = clusters;
-      }
-      renderGroups(groups, classifications, tabData);
+      renderCurrentView();
     });
+  });
+
+  // Live-update: re-render when background updates state
+  browser.storage.onChanged.addListener((changes) => {
+    if (changes.tabbrainState) {
+      loadAndRender();
+    }
   });
 });
 
@@ -76,7 +100,8 @@ function renderGroups(clusters, classifications, tabData) {
     const tabCount = cluster.tabIds.length;
     const saveForLaterIds = cluster.tabIds.filter((id) => classifications[id] === "save-for-later");
 
-    const colorDot = cluster.color ? `<span class="container-dot" style="background:${cluster.color}"></span>` : "";
+    const safeColor = /^[a-zA-Z0-9#(),.\s%]+$/.test(cluster.color || "") ? cluster.color : "";
+    const colorDot = safeColor ? `<span class="container-dot" style="background:${safeColor}"></span>` : "";
 
     card.innerHTML = `
       <div class="group-header">
@@ -98,11 +123,12 @@ function renderGroups(clusters, classifications, tabData) {
       const tab = tabData[tabId];
       if (!tab) continue;
       const status = classifications[tabId] || "active";
-      const faviconUrl = getFaviconUrl(tab.url);
+      const faviconUrl = tab.favIconUrl || getFaviconUrl(tab.url);
 
       const row = document.createElement("div");
       row.className = "tab-row";
       row.dataset.tabId = tabId;
+      row.dataset.url = tab.url || "";
       row.innerHTML = `
         <img class="tab-favicon" src="${faviconUrl}" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22><rect fill=%22%23ddd%22 width=%2216%22 height=%2216%22 rx=%222%22/></svg>'" />
         <span class="tab-title" title="${escapeHtml(tab.title)}">${escapeHtml(tab.title || tab.url)}</span>
@@ -169,7 +195,12 @@ function renderGroups(clusters, classifications, tabData) {
       card.querySelector(".group-count").textContent = body.querySelectorAll(".tab-row").length;
 
       // Persist custom assignment
-      const groupName = card.querySelector(".group-name").firstChild.textContent.trim();
+      const groupNameEl = card.querySelector(".group-name");
+      const groupName = Array.from(groupNameEl.childNodes)
+        .filter((n) => n.nodeType === Node.TEXT_NODE)
+        .map((n) => n.textContent.trim())
+        .join("")
+        .trim();
       browser.runtime.sendMessage({
         action: "assignTabToGroup",
         tabId: Number(draggedTabId),
@@ -437,7 +468,8 @@ function setupSearch() {
     const query = input.value.toLowerCase().trim();
     document.querySelectorAll(".tab-row").forEach((row) => {
       const title = row.querySelector(".tab-title").textContent.toLowerCase();
-      row.style.display = !query || title.includes(query) ? "" : "none";
+      const url = (row.dataset.url || "").toLowerCase();
+      row.style.display = !query || title.includes(query) || url.includes(query) ? "" : "none";
     });
     document.querySelectorAll(".group-card").forEach((card) => {
       const visibleTabs = card.querySelectorAll(".tab-row:not([style*='display: none'])");
@@ -464,7 +496,8 @@ function setupActions() {
   });
 
   document.getElementById("btn-settings").addEventListener("click", () => {
-    window.location.href = "settings.html";
+    browser.runtime.openOptionsPage();
+    window.close();
   });
 }
 
@@ -506,7 +539,7 @@ function renderSnoozedList(snoozedList) {
     row.className = "rescue-row";
     row.innerHTML = `
       <span class="tab-title">${escapeHtml(entry.title || entry.url)}</span>
-      <span class="rescue-time">wakes ${timeAgo(entry.wakeAt).replace(" ago", "")}</span>
+      <span class="rescue-time">wakes ${timeUntil(entry.wakeAt)}</span>
     `;
     row.addEventListener("click", () => {
       browser.runtime.sendMessage({ action: "cancelSnooze", index: i });
@@ -569,4 +602,15 @@ function timeAgo(timestamp) {
   if (hours < 24) return `${hours}h ago`;
   const days = Math.floor(hours / 24);
   return `${days}d ago`;
+}
+
+function timeUntil(timestamp) {
+  const diff = timestamp - Date.now();
+  if (diff <= 0) return "now";
+  const mins = Math.floor(diff / 60000);
+  if (mins < 60) return `in ${mins}m`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `in ${hours}h`;
+  const days = Math.floor(hours / 24);
+  return `in ${days}d`;
 }

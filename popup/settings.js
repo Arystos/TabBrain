@@ -17,6 +17,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const settings = { ...DEFAULTS, ...(data.tabbrainSettings || {}) };
   document.documentElement.setAttribute("data-theme", settings.theme);
   loadForm(settings);
+  loadFrequencyData();
 
   document.getElementById("btn-save").addEventListener("click", saveSettings);
   document.getElementById("btn-reset").addEventListener("click", () => {
@@ -24,7 +25,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     saveSettings();
   });
   document.getElementById("btn-back").addEventListener("click", () => {
-    window.location.href = "popup.html";
+    window.close();
   });
 
   document.getElementById("set-theme").addEventListener("change", (e) => {
@@ -64,14 +65,15 @@ document.addEventListener("DOMContentLoaded", async () => {
       const text = await file.text();
       const importData = JSON.parse(text);
       if (importData.version !== 1) {
-        alert("Unsupported export format.");
+        document.getElementById("btn-import").textContent = "Unsupported format";
+        setTimeout(() => { document.getElementById("btn-import").textContent = "Import tabs"; }, 2000);
         return;
       }
       let tabCount = 0;
       for (const cluster of (importData.clusters || [])) {
         for (const tabId of cluster.tabIds) {
           const td = importData.tabData[tabId];
-          if (td && td.url) {
+          if (td && td.url && (td.url.startsWith("http://") || td.url.startsWith("https://"))) {
             await browser.tabs.create({ url: td.url, active: false });
             tabCount++;
           }
@@ -82,11 +84,39 @@ document.addEventListener("DOMContentLoaded", async () => {
         document.getElementById("btn-import").textContent = "Import tabs";
       }, 2000);
     } catch (err) {
-      alert("Failed to import: " + err.message);
+      document.getElementById("btn-import").textContent = "Import failed";
+      setTimeout(() => { document.getElementById("btn-import").textContent = "Import tabs"; }, 2000);
     }
     e.target.value = "";
   });
 });
+
+async function loadFrequencyData() {
+  const data = await browser.storage.local.get("tabbrain_frequency");
+  const counts = data.tabbrain_frequency || {};
+  const sorted = Object.entries(counts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 15);
+
+  const container = document.getElementById("freq-domains");
+  if (sorted.length === 0) {
+    container.textContent = "No data yet — visit some sites and check back.";
+    return;
+  }
+
+  const list = document.createElement("div");
+  list.style.cssText = "display:flex;flex-wrap:wrap;gap:4px;";
+  for (const [domain, count] of sorted) {
+    const pill = document.createElement("span");
+    pill.style.cssText = "padding:2px 8px;border-radius:10px;background:var(--bg-card);border:1px solid var(--border);";
+    const isProtected = count >= 10;
+    if (isProtected) pill.style.borderColor = "var(--focus-border)";
+    pill.textContent = `${domain} (${count})`;
+    pill.title = isProtected ? "Auto-protected" : `${10 - count} more visits to auto-protect`;
+    list.appendChild(pill);
+  }
+  container.appendChild(list);
+}
 
 function loadForm(s) {
   document.getElementById("set-auto-dups").checked = s.autoCloseDups;
