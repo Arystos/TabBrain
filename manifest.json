@@ -4,10 +4,18 @@
   "version": "0.3.0",
   "description": "Smart tab triage — auto-detects duplicates, clusters by topic, cleans stale tabs, keeps a rescue list.",
   "permissions": ["tabs", "storage", "notifications", "bookmarks", "alarms", "contextualIdentities"],
+  "data_collection_permissions": {
+    "collectsTechnicalData": false,
+    "collectsInteractionData": false,
+    "collectsPersonalData": false
+  },
   "browser_specific_settings": {
     "gecko": {
       "id": "tabbrain@aristide.dev",
       "strict_min_version": "109.0"
+    },
+    "gecko_android": {
+      "strict_min_version": "120.0"
     }
   },
   "options_ui": {
