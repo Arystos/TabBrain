@@ -2,10 +2,12 @@
 
 Smart tab manager for Firefox — automatically groups tabs by topic, detects duplicates, cleans stale tabs, and keeps a rescue list so you never lose a tab again.
 
+[![Mozilla Add-on Version](https://img.shields.io/amo/v/tabbrain?label=AMO&color=FF7139&logo=firefox-browser&logoColor=white)](https://addons.mozilla.org/addon/tabbrain/)
+[![Mozilla Add-on Users](https://img.shields.io/amo/users/tabbrain?color=FF7139)](https://addons.mozilla.org/addon/tabbrain/)
+[![Mozilla Add-on Rating](https://img.shields.io/amo/rating/tabbrain?color=FF7139)](https://addons.mozilla.org/addon/tabbrain/)
 ![Firefox](https://img.shields.io/badge/Firefox-140%2B-FF7139?logo=firefox-browser&logoColor=white)
 ![Android](https://img.shields.io/badge/Firefox%20Android-142%2B-FF7139?logo=firefox-browser&logoColor=white)
 ![License](https://img.shields.io/badge/license-MIT-blue)
-![Version](https://img.shields.io/badge/version-0.3.0-green)
 [![Ko-fi](https://img.shields.io/badge/Ko--fi-Support%20this%20project-FF5E5B?logo=ko-fi&logoColor=white)](https://ko-fi.com/arystos)
 
 ## Why TabBrain?
@@ -27,7 +29,7 @@ If you're the kind of person who has 50+ tabs open and loses track of what you w
 
 ### From Firefox Add-ons (AMO)
 
-> Submitted and pending review — link will be added once approved.
+**[Install TabBrain from Firefox Add-ons](https://addons.mozilla.org/addon/tabbrain/)** — recommended for most users.
 
 ### Manual Install (for development)
 

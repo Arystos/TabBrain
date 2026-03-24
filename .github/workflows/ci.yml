@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate manifest.json
+        run: python3 -c "import json; json.load(open('manifest.json'))"
+
+      - name: Check for syntax errors
+        run: |
+          find . -name '*.js' -not -path './.git/*' | while read f; do
+            node --check "$f" || exit 1
+          done
+
+      - name: Verify required files exist
+        run: |
+          for f in manifest.json background.js popup/popup.html popup/popup.js popup/settings.html popup/settings.js PRIVACY.md LICENSE; do
+            test -f "$f" || { echo "Missing: $f"; exit 1; }
+          done
+
+      - name: Check for hardcoded secrets
+        run: |
+          if grep -rn 'api[_-]key\|api[_-]secret\|password\s*=' --include='*.js' --include='*.json' .; then
+            echo "Potential hardcoded secrets found"
+            exit 1
+          fi
+
+  package:
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build extension zip
+        run: |
+          zip -r tabbrain.zip \
+            manifest.json \
+            background.js \
+            lib/ \
+            popup/ \
+            icons/ \
+            LICENSE \
+            PRIVACY.md \
+            -x '*.git*'
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: tabbrain-extension
+          path: tabbrain.zip
