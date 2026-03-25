@@ -95,11 +95,13 @@ TabBrain/
 │   └── frequency.js       # Domain visit frequency
 ├── popup/
 │   ├── popup.html         # Main popup UI
-│   ├── popup.js           # Popup rendering & interactions
-│   ├── popup.css          # Popup styles
+│   ├── popup.js           # Popup/sidebar rendering & interactions
+│   ├── popup.css          # Popup/sidebar styles (responsive)
 │   ├── settings.html      # Settings page
 │   ├── settings.js        # Settings logic
 │   └── themes.css         # Light/dark theme variables
+├── sidebar/
+│   └── sidebar.html       # Sidebar panel (reuses popup JS/CSS)
 └── icons/                 # Extension icons (SVG)
 ```
 

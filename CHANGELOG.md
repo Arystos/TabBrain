@@ -2,6 +2,15 @@
 
 All notable changes to TabBrain are documented here.
 
+## [0.4.0] - 2026-03-25
+
+### Added
+- Sidebar panel — open TabBrain alongside vertical tabs via View > Sidebar > TabBrain
+- Dual mode — popup for quick access, sidebar for persistent use
+- Pin/unpin toggle in sidebar header — pinned keeps sidebar open on tab switch, unpinned auto-closes
+- Responsive layout — sidebar adapts to narrow widths (stats wrap, elements hide below 350px/280px)
+- Auto-close on tab switch — when unpinned, sidebar closes when switching tabs via Firefox UI
+
 ## [0.3.0] - 2025-03-25
 
 ### Added

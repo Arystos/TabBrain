@@ -1,5 +1,8 @@
 // popup/popup.js
-// Renders TabBrain popup UI from pre-computed state
+// Renders TabBrain popup/sidebar UI from pre-computed state
+
+const isSidebar = document.body.classList.contains("sidebar");
+let sidebarPinned = true;
 
 // Shared popup state — updated on load and on storage changes
 let popupState = { classifications: {}, clusters: [], tabData: {}, containers: {} };
@@ -41,6 +44,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   const settingsData = await browser.storage.local.get("tabbrainSettings");
   const theme = (settingsData.tabbrainSettings || {}).theme || "system";
   document.documentElement.setAttribute("data-theme", theme);
+
+  if (isSidebar) {
+    await initSidebarPin();
+  }
 
   await loadAndRender();
 
@@ -140,7 +147,9 @@ function renderGroups(clusters, classifications, tabData) {
       row.addEventListener("click", (e) => {
         if (e.target.classList.contains("tab-close-btn") || e.target.classList.contains("tab-snooze-btn")) return;
         browser.tabs.update(Number(tabId), { active: true });
-        window.close();
+        if (!isSidebar || !sidebarPinned) {
+          window.close();
+        }
       });
 
       row.draggable = true;
@@ -481,12 +490,12 @@ function setupSearch() {
 function setupActions() {
   document.getElementById("btn-close-dups").addEventListener("click", () => {
     browser.runtime.sendMessage({ action: "closeDuplicates" });
-    window.close();
+    if (!isSidebar) window.close();
   });
 
   document.getElementById("btn-close-stale").addEventListener("click", () => {
     browser.runtime.sendMessage({ action: "closeStale" });
-    window.close();
+    if (!isSidebar) window.close();
   });
 
   document.getElementById("btn-clear-rescue").addEventListener("click", () => {
@@ -497,7 +506,7 @@ function setupActions() {
 
   document.getElementById("btn-settings").addEventListener("click", () => {
     browser.runtime.openOptionsPage();
-    window.close();
+    if (!isSidebar) window.close();
   });
 }
 
@@ -613,4 +622,38 @@ function timeUntil(timestamp) {
   if (hours < 24) return `in ${hours}h`;
   const days = Math.floor(hours / 24);
   return `in ${days}d`;
+}
+
+// Sidebar pin/unpin
+async function initSidebarPin() {
+  const data = await browser.storage.local.get("tabbrainSidebarPinned");
+  sidebarPinned = data.tabbrainSidebarPinned !== false;
+  updatePinButton();
+
+  const pinBtn = document.getElementById("btn-pin");
+  if (pinBtn) {
+    pinBtn.addEventListener("click", async (e) => {
+      e.stopPropagation();
+      sidebarPinned = !sidebarPinned;
+      await browser.storage.local.set({ tabbrainSidebarPinned: sidebarPinned });
+      updatePinButton();
+    });
+  }
+
+  // Close sidebar when user switches tabs via Firefox UI (not TabBrain)
+  browser.tabs.onActivated.addListener(() => {
+    if (!sidebarPinned) {
+      window.close();
+    }
+  });
+}
+
+function updatePinButton() {
+  const pinBtn = document.getElementById("btn-pin");
+  if (!pinBtn) return;
+  pinBtn.textContent = sidebarPinned ? "\u{1F4CC}" : "\u{1F4CD}";
+  pinBtn.classList.toggle("pinned", sidebarPinned);
+  pinBtn.title = sidebarPinned
+    ? "Pinned: sidebar stays open on tab click"
+    : "Unpinned: sidebar closes on tab click";
 }
